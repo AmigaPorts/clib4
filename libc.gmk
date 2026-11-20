@@ -1063,9 +1063,9 @@ $(OUT_STATIC)/%.o : $(LIB_DIR)/%.S
 	$(VERBOSE)$(COMPILE_ASM)
 
 ifdef SPE
-$(OUT_STATIC)/%.o : $(LIB_DIR)/%.c
+$(OUT_STATIC)/%.o : $(LIB_DIR)/%.c | $(PATCHFORSPE)
 	$(VERBOSE)$(COMPILE_SPE)
-$(OUT_SHARED)/%.o : $(LIB_DIR)/%.c
+$(OUT_SHARED)/%.o : $(LIB_DIR)/%.c | $(PATCHFORSPE)
 	$(VERBOSE)$(COMPILE_SHARED_SPE)
 else
 $(OUT_STATIC)/%.o : $(LIB_DIR)/%.c

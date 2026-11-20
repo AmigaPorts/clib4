@@ -7,7 +7,7 @@
 
 ##############################################################################
 
-.PHONY : all prepare all-targets all-libs clean \
+.PHONY : all prepare all-targets all-libs clean PatchForSPE \
 	gitver version compile-tests install release dpkg
 
 # Determines the Amiga SDK version that CLIB4 is being built with and
@@ -69,6 +69,7 @@ LOG_COMMAND :=
 LIB_ROOT ?= $(shell pwd)
 LIB_DIR = $(LIB_ROOT)/library
 BUILD_DIR = $(LIB_ROOT)/build
+PATCHFORSPE = $(BUILD_DIR)/PatchForSPE
 OUTPUT_LIB = $(BUILD_DIR)/lib
 DPKG_LIB ?= clib4_1.0_amd64
 
@@ -252,9 +253,6 @@ ALL_TARGETS = \
 	$(OUTPUT_LIB)/shcrtend.o \
 	$(MAIN_LIB)
 
-ifdef SPE
-	ALL_TARGETS := PatchForSPE | $(ALL_TARGETS)
-endif
 
 all-targets: $(ALL_TARGETS)
 
@@ -418,7 +416,7 @@ define COMPILE_SPE
 $(VERBOSE)@$(MAKEDIR) $(@D)
 $(VERBOSE)echo -e "\rPreprocessing and compiling SPE \033[0;33m[$(@D)]\033[0m \r\t\t\t\t\t\t\t\t\t\t\t \033[0;31m$(@F)\033[0m"
 $(VERBOSE)$(CC) -c $(CFLAGS) -mno-regnames -MMD -MP -MF $(@:.o=.d) -MT $@ -S -o $@_in $< $(LOG_COMMAND)
-$(VERBOSE)$(BUILD_DIR)/PatchForSPE $@_in $@.S >/dev/null
+$(VERBOSE)$(PATCHFORSPE) $@_in $@.S >/dev/null
 $(VERBOSE)$(CC) $(CFLAGS) -c $@.S -o $@ $(LOG_COMMAND)
 $(VERBOSE)-$(DELETE) $@_in $@.S
 endef
@@ -427,7 +425,7 @@ define COMPILE_SHARED_SPE
 $(VERBOSE)@$(MAKEDIR) $(@D)
 $(VERBOSE)echo -e "\rPreprocessing and compiling SPE \033[0;33m[$(@D)]\033[0m \r\t\t\t\t\t\t\t\t\t\t\t \033[0;31m$(@F)\033[0m"
 $(VERBOSE)$(CC) -c $(PIC) -mabi=spe $(CFLAGS) -mno-regnames -MMD -MP -MF $(@:.o=.d) -MT $@ -S -o $@_in $< $(LOG_COMMAND)
-$(VERBOSE)$(BUILD_DIR)/PatchForSPE $@_in $@.S >/dev/null
+$(VERBOSE)$(PATCHFORSPE) $@_in $@.S >/dev/null
 $(VERBOSE)$(CC) $(PIC) -mabi=spe $(CFLAGS) -c $@.S -o $@ $(LOG_COMMAND)
 $(VERBOSE)-$(DELETE) $@_in $@.S
 endef
@@ -447,12 +445,13 @@ $(VERBOSE)echo -e "\rMaking Shared \033[0;31m$@\033[0m"
 $(VERBOSE)$(CC) -nostdlib -shared -o $@ $(OUTPUT_LIB)/shcrtbegin.o $^ $(OUTPUT_LIB)/shcrtend.o $(LOG_COMMAND) -Wl,-soname,$(@F)
 endef
 
-PatchForSPE : $(LIB_ROOT)/misc/PatchForSPE.cpp
-	$(HOST_CXX) -o $(BUILD_DIR)/$@ $<
+# The host tool that COMPILE_SPE and COMPILE_SHARED_SPE run.  The objects
+# they make depend on it, so that the build can run in parallel.
+$(PATCHFORSPE) : $(LIB_ROOT)/misc/PatchForSPE.cpp
+	@$(MAKEDIR) $(@D)
+	$(HOST_CXX) -o $@ $<
 
-ifdef SPE
-.NOTPARALLEL: PatchForSPE
-endif
+PatchForSPE : $(PATCHFORSPE)
 
 compile-tests:
 	+make -C $(LIB_ROOT)/test_programs; CC="$(CC)" CXX="$(CXX)" COPY="$(COPY)" DELETE="$(DELETE)" MAKEDIR="$(MAKEDIR)"

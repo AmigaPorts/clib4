@@ -4,25 +4,25 @@
 
 ifdef SPE
 $(OUT_SHARED_LIB)/shared_library/clib4.o : CFLAGS = $(INCLUDES) $(OPTIONS) $(OPTIMIZE) $(SPEFLAGS) -O0 -fno-aggressive-loop-optimizations
-$(OUT_SHARED_LIB)/shared_library/clib4.o : $(LIB_DIR)/shared_library/clib4.c $(LIB_DIR)/shared_library/clib4.h
+$(OUT_SHARED_LIB)/shared_library/clib4.o : $(LIB_DIR)/shared_library/clib4.c $(LIB_DIR)/shared_library/clib4.h | $(PATCHFORSPE)
 	$(VERBOSE)$(COMPILE_SPE)
 
-$(OUT_SHARED_LIB)/shared_library/%.o : $(LIB_DIR)/shared_library/%.c
+$(OUT_SHARED_LIB)/shared_library/%.o : $(LIB_DIR)/shared_library/%.c | $(PATCHFORSPE)
 	$(VERBOSE)$(COMPILE_SPE)
 
-$(OUT_SHARED_LIB)/%.o : $(LIB_DIR)/%.c
+$(OUT_SHARED_LIB)/%.o : $(LIB_DIR)/%.c | $(PATCHFORSPE)
 	$(VERBOSE)$(COMPILE_SPE)
 
-$(OUT_SHARED_LIB)/math/%.o : $(LIB_DIR)/math/%.c
+$(OUT_SHARED_LIB)/math/%.o : $(LIB_DIR)/math/%.c | $(PATCHFORSPE)
 	$(VERBOSE)$(COMPILE_SPE)
 
-$(OUT_SHARED_LIB)/profile/%.o : $(LIB_DIR)/profile/%.c
+$(OUT_SHARED_LIB)/profile/%.o : $(LIB_DIR)/profile/%.c | $(PATCHFORSPE)
 	$(VERBOSE)$(COMPILE_SPE)
 
-$(OUT_SHARED_LIB)/amiga/%.o : $(LIB_DIR)/amiga/%.c
+$(OUT_SHARED_LIB)/amiga/%.o : $(LIB_DIR)/amiga/%.c | $(PATCHFORSPE)
 	$(VERBOSE)$(COMPILE_SPE)
 
-$(OUT_SHARED_LIB)/crypt/%.o : $(LIB_DIR)/crypt/%.c
+$(OUT_SHARED_LIB)/crypt/%.o : $(LIB_DIR)/crypt/%.c | $(PATCHFORSPE)
 	$(VERBOSE)$(COMPILE_SPE)
 else
 $(OUT_SHARED_LIB)/shared_library/clib4.o : CFLAGS = $(INCLUDES) $(OPTIONS) $(OPTIMIZE) -O0 -fno-aggressive-loop-optimizations

@@ -131,10 +131,10 @@ $(OUT_STATIC)/%.o : CFLAGS += $(LARGEDATA)
 $(OUT_SHARED)/%.o : CFLAGS += $(PIC) $(LARGEDATA)
 
 ifdef SPE
-$(OUT_STATIC)/%.o : $(LIB_DIR)/%.c
+$(OUT_STATIC)/%.o : $(LIB_DIR)/%.c | $(PATCHFORSPE)
 	$(VERBOSE)$(COMPILE_SPE)
 
-$(OUT_SHARED)/%.o : $(LIB_DIR)/%.c
+$(OUT_SHARED)/%.o : $(LIB_DIR)/%.c | $(PATCHFORSPE)
 	$(VERBOSE)$(COMPILE_SHARED_SPE)
 else
 $(OUT_STATIC)/%.o : $(LIB_DIR)/%.c
