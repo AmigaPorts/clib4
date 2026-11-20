@@ -105,7 +105,9 @@ LLong1:							// enter from memcpy() and memmove()
     cmpwi	cr5,r0,0			// set cr5 beq if relatively word aligned
     blt		cr1,LLongReverse	// handle reverse move
     andi.	w4,w2,3				// w4 <- #bytes to word align destination
+#ifndef __SPE__
     beq		cr5,LLongFloat		// relatively aligned so use FPRs
+#endif
     sub		rc,rc,w4			// adjust count for alignment
     srwi	r0,rc,5				// get #chunks to xfer (>=1)
     rlwinm	rc,rc,0,0x1F		// mask down to leftover bytes
@@ -151,7 +153,8 @@ LLong1:							// enter from memcpy() and memmove()
     stswx	r5,0,r0				// store them
     blr
 
-    // Forward, aligned loop.  We use FPRs.
+#ifndef __SPE__
+    // Forward, aligned loop.  We use FPRs, which SPE doesn't have.
 
 LLongFloat:
     andi.	w4,w2,7				// W4 <- #bytes to doubleword-align destination
@@ -188,6 +191,7 @@ LLongFloat:
     lswx	r5,0,rs				// load xer bytes into r5-r12 (rs==r4)
     stswx	r5,0,r0				// store them
     blr
+#endif
 
 
     // Long, reverse moves.
@@ -196,7 +200,9 @@ LLongFloat:
 LLongReverse:
     add		rd,rd,rc			// point to end of operands + 1
     add		rs,rs,rc
+#ifndef __SPE__
     beq		cr5,LReverseFloat	// aligned operands so can use FPRs
+#endif
     srwi	r0,rc,5				// get chunk count
     rlwinm	rc,rc,0,0x1F		// mask down to leftover bytes
     mtctr	r0					// set up loop count
@@ -227,7 +233,8 @@ LLongReverse:
     blr
 
 
-    // Long, reverse aligned moves.  We use FPRs.
+#ifndef __SPE__
+    // Long, reverse aligned moves.  We use FPRs, which SPE doesn't have.
 
 LReverseFloat:
     andi.	w4,rd,7				// W3 <- #bytes to doubleword-align destination
@@ -263,3 +270,4 @@ LReverseFloat:
     lswx	r5,0,r4				// load xer bytes into r5-r12
     stswx	r5,0,r0				// store them
     blr
+#endif

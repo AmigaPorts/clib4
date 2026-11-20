@@ -151,18 +151,18 @@ ifdef USE_TEMPFILES
 	CFLAGS += -DUSE_TEMPFILES
 endif
 
-# SPEFLAGS select the SPE code generation.  C files built with flags of
-# their own add them too, so that they see __SPE__ like the rest of the library.
+# SPEFLAGS select the SPE code generation.  Files built with flags of their
+# own add them too, so that they see __SPE__ like the rest of the library.
 ifdef SPE
+	OUTPUT_LIB = $(BUILD_DIR)/lib/soft-float
 	CC := ppc-amigaos-gcc-6.4.0
 	AS := ppc-amigaos-as-6.4.0
 	CMATH := -mfpu=dp_lite
-	OUTPUT_LIB = $(BUILD_DIR)/lib/soft-float
 	SPEFLAGS := -D__SPE__ -msoft-float -mspe -mtune=8540 -mcpu=8540 -mabi=spe -mfloat-gprs=double $(CMATH)
 	CFLAGS := $(CFLAGS) $(SPEFLAGS) -fno-inline-functions -fno-partial-inlining \
 				-fno-align-functions -fno-align-jumps -fno-align-loops -fno-align-labels -fno-inline-small-functions \
 				-fno-indirect-inlining -Wno-overflow -Wno-unused-but-set-variable -Wno-uninitialized #-Wdouble-promotion
-	AFLAGS := $(AFLAGS) -mvrsave -D__SPE__ -mspe -mtune=8540 -mcpu=8540 -mfloat-gprs=double $(CMATH) -Wno-overflow
+	AFLAGS := $(AFLAGS) -mvrsave $(filter-out -msoft-float -mabi=spe,$(SPEFLAGS)) -Wno-overflow
 endif
 
 ifdef PROFILE
@@ -371,7 +371,7 @@ endef
 define COMPILE_ASM
 $(VERBOSE)@$(MAKEDIR) $(@D)
 $(VERBOSE)echo -e "\rCompiling Static ASM \033[0;33m[$(@D)]\033[0m \r\t\t\t\t\t\t\t\t\t\t\t \033[0;31m$(@F)\033[0m"
-$(VERBOSE)$(CC) -o $@ -c $< $(LOG_COMMAND)
+$(VERBOSE)$(CC) $(SPEFLAGS) -o $@ -c $< $(LOG_COMMAND)
 endef
 
 define COMPILE_SHARED
@@ -395,7 +395,7 @@ endef
 define COMPILE_REG
 $(VERBOSE)@$(MAKEDIR) $(@D)
 $(VERBOSE)echo -e "\rAssembling with regnames \033[0;33m[$(@D)]\033[0m \r\t\t\t\t\t\t\t\t\t\t\t \033[0;31m$(@F)\033[0m"
-$(VERBOSE)$(CC) -mvrsave -mregnames -DVRSAVE -o $@ -c $< $(LOG_COMMAND)
+$(VERBOSE)$(CC) $(SPEFLAGS) -mvrsave -mregnames -DVRSAVE -o $@ -c $< $(LOG_COMMAND)
 endef
 
 define COMPILE_ALTIVEC_REG

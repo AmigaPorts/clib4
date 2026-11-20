@@ -42,7 +42,7 @@ FUNC_START(setjmp)
     mfcr	4
     stwu	4,4(3)		# offset 88
 
-#ifndef _SOFT_FLOAT
+#if !defined(_SOFT_FLOAT) && !defined(__SPE__)
     stfdu	14,8(3)		# offset 96
     stfdu	15,8(3)		# offset 104
     stfdu	16,8(3)		# offset 112
