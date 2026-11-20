@@ -5,7 +5,7 @@
 (set @default-env-dest "ENVARC:")
 (set @default-dest
 	(askdir
-		(prompt "Where would you like to install clib4.library?\nA new Drawer will be created if necessary")
+		(prompt "Where would you like to install the clib4 library?\nA new Drawer will be created if necessary")
 		(help @askdir-help)
 		(default @default-dest)
 		(newpath)
@@ -16,7 +16,7 @@
 	(prompt "clib4 installation")
 	(help @copyfiles-help)
 	(source "")
-	(choices "clib4.library")
+	(pattern "clib4#?.library")
 	(dest @default-dest)
 	(confirm)
 )

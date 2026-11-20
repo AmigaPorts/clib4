@@ -197,7 +197,7 @@ clib4_start(char *args, const int32 arglen, struct Library *sysbase) {
         IUtility = (struct UtilityIFace *) OpenLibraryInterface(iexec, "utility.library", MIN_OS_VERSION);
         if (IUtility != NULL) {
             UtilityBase = IUtility->Data.LibBase;
-            iclib4 = (struct Clib4IFace *) OpenLibraryInterface(iexec, "clib4.library", 1);
+            iclib4 = (struct Clib4IFace *) OpenLibraryInterface(iexec, CLIB4_LIBRARY_NAME, 1);
             if (iclib4 != NULL) {
                 const struct Library *clib4base = ((struct Interface *) iclib4)->Data.LibBase;
                 if (clib4base->lib_Version > VERSION || (clib4base->lib_Version == VERSION && clib4base->lib_Revision >= REVISION)) {
@@ -206,7 +206,7 @@ clib4_start(char *args, const int32 arglen, struct Library *sysbase) {
                     rc = iclib4->library_start(args, arglen, main, __CTOR_LIST__, __DTOR_LIST__, sms);
                 }
                 else {
-                    idos->Printf("This program requires clib4.library version %ld.%ld\n", VERSION, REVISION);
+                    idos->Printf("This program requires %s version %ld.%ld\n", CLIB4_LIBRARY_NAME, VERSION, REVISION);
                 }
             } else {
                 idos->Printf("Cannot open %s\n", VERS);

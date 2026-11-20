@@ -151,9 +151,13 @@ ifdef USE_TEMPFILES
 	CFLAGS += -DUSE_TEMPFILES
 endif
 
-# SPEFLAGS select the SPE code generation.  Files built with flags of their
-# own add them too, so that they see __SPE__ like the rest of the library.
+# The SPE build is clib4spe.library, which can be installed next to the
+# classic clib4.library.  SPEFLAGS select the SPE code generation; files
+# built with flags of their own add them too, so that they see __SPE__
+# like the rest of the library.
+LIBRARY := clib4
 ifdef SPE
+	LIBRARY := clib4spe
 	OUTPUT_LIB = $(BUILD_DIR)/lib/soft-float
 	CC := ppc-amigaos-gcc-6.4.0
 	AS := ppc-amigaos-as-6.4.0
@@ -196,7 +200,7 @@ GIT_HASH = $(shell git rev-parse --short HEAD)
 
 # This is the first target: it depends on all the targets
 
-all: gitver prepare all-targets all-libs clib4.library.debug clib4.library
+all: gitver prepare all-targets all-libs $(LIBRARY).library.debug $(LIBRARY).library
 
 ##############################################################################
 
@@ -266,7 +270,7 @@ clean:
 	-$(DELETE) $(BUILD_DIR)/PatchForSPE
 	-$(DELETE) $(OUTPUT_LIB)
 	-$(DELETE) $(BUILD_DIR)/compiler.log
-	-$(DELETE) $(BUILD_DIR)/clib4.library*
+	-$(DELETE) $(BUILD_DIR)/clib4*.library*
 	-$(DELETE) clib4.lha
 	-$(DELETE) clib4.bak
 	-$(DELETE) $(DPKG_LIB)
@@ -281,13 +285,13 @@ gitver:
 ifdef GITTAG
 	$(VERBOSE)sed -i 's/VERSION\t*[0-9]*/VERSION\t\t\t$(MAJOR)/g' library/c.lib_rev.h
 	$(VERBOSE)sed -i 's/REVISION\t*[0-9]*/REVISION\t\t$(MINOR)/g' library/c.lib_rev.h
-	$(VERBOSE)sed -i 's/clib4.library [0-9]*\.[0-9]*/clib4.library $(MAJOR).$(MINOR)/g' library/c.lib_rev.h
-	$(VERBOSE)sed -i 's/clib4.library [0-9]*\.[0-9]*-[a-z0-9]*/clib4.library $(MAJOR).$(MINOR)-$(GIT_HASH)/g' library/c.lib_rev.h
+	$(VERBOSE)sed -i 's/\(CLIB4_LIBRARY_NAME " \)[0-9]*\.[0-9]*/\1$(MAJOR).$(MINOR)/g' library/c.lib_rev.h
+	$(VERBOSE)sed -i 's/\(CLIB4_LIBRARY_NAME " \)[0-9]*\.[0-9]*-[a-z0-9]*/\1$(MAJOR).$(MINOR)-$(GIT_HASH)/g' library/c.lib_rev.h
 	$(VERBOSE)sed -i 's/Version: [0-9]*\.[0-9]*/Version: $(MAJOR).$(MINOR)/g' misc/control
 endif
 
 ifneq ($(filter YES yes,$(NIGHTLY)),)
-	$(VERBOSE)sed -i 's/clib4.library \([0-9]*\.[0-9]*\)-\([a-z0-9]*\)/clib4.library \1-nightly-$(GIT_HASH)/g' library/c.lib_rev.h
+	$(VERBOSE)sed -i 's/\(CLIB4_LIBRARY_NAME " [0-9]*\.[0-9]*\)-\([a-z0-9]*\)/\1-nightly-$(GIT_HASH)/g' library/c.lib_rev.h
 endif
 
 # Update the version numbers bound to the individual libraries
@@ -298,12 +302,12 @@ version:
 	$(COPY) c.lib_rev.rev math/pthread.lib_rev.rev
 	$(COPY) c.lib_rev.rev math/profile.lib_rev.rev
 
-# Shared clib4.library rules
+# Shared clib4.library (or clib4spe.library) rules
 
-clib4.library.debug: $(OUT_SHARED_LIB)/shared_library/clib4.o $(OUT_SHARED_LIB)/shared_library/math.o $(OBJ_C_LIB)
+$(LIBRARY).library.debug: $(OUT_SHARED_LIB)/shared_library/clib4.o $(OUT_SHARED_LIB)/shared_library/math.o $(OBJ_C_LIB)
 	$(VERBOSE)$(CC) -o $(BUILD_DIR)/$@ $(CFLAGS) $(BUILD_DIR)/shared/shared_library/clib4.o $(BUILD_DIR)/shared/shared_library/math.o $(OBJ_C_LIB) $(OUTPUT_LIB)/crtend.o $(DLIBS) -Wl,-export-dynamic -Wl,--cref,-M,-Map=$(BUILD_DIR)/$@.map
 
-clib4.library: clib4.library.debug
+$(LIBRARY).library: $(LIBRARY).library.debug
 	cp $(BUILD_DIR)/$< $(BUILD_DIR)/$@
 	$(STRIP) -R.comment -R.sdata2 --strip-unneeded-rel-relocs $(BUILD_DIR)/$@
 
@@ -456,7 +460,7 @@ compile-tests:
 install:
 	$(DELETE) $(INSTALL_PREFIX)/include/*
 	$(DELETE) $(INSTALL_PREFIX)/lib/*
-	$(DELETE) $(INSTALL_PREFIX)/clib4.library*
+	$(DELETE) $(INSTALL_PREFIX)/clib4*.library*
 	$(COPY) $(OUTPUT_LIB)/* $(INSTALL_PREFIX)/lib/
 ifdef SPE
 	$(MAKELINK) $(INSTALL_PREFIX)/lib/soft-float/libamiga.a $(INSTALL_PREFIX)/lib/baserel/libamiga.a
@@ -481,7 +485,7 @@ else
 endif
 	$(COPY) libs/libauto.a $(INSTALL_PREFIX)/lib/
 	$(MAKELINK) $(INSTALL_PREFIX)/lib/libauto.a $(INSTALL_PREFIX)/lib/baserel/libauto.a
-	$(COPY) $(BUILD_DIR)/clib4.library* $(INSTALL_PREFIX)
+	$(COPY) $(BUILD_DIR)/$(LIBRARY).library* $(INSTALL_PREFIX)
 	$(COPY) $(LIB_ROOT)/library/include/* $(INSTALL_PREFIX)/include/
 
 release:
@@ -495,8 +499,8 @@ release:
 	-$(COPY) installer/Install* clib4/
 # -$(COPY) installer/clib4.info .
 	-$(COPY) installer/README.md.info clib4/
-	-$(COPY) $(BUILD_DIR)/clib4.library clib4/
-	-$(COPY) $(BUILD_DIR)/clib4.library.debug clib4/
+	-$(COPY) $(BUILD_DIR)/$(LIBRARY).library clib4/
+	-$(COPY) $(BUILD_DIR)/$(LIBRARY).library.debug clib4/
 	-$(COPY) misc clib4/
 	-$(COPY) libs/libauto.a clib4/lib/
 	-$(COPY) $(OUTPUT_LIB)/* clib4/lib/

@@ -94,6 +94,11 @@ Keep in mind that clib4 is not compiled with altivec optimizations for all files
 However to compile these functions you need a compiler that supports SPE ABI. The latest gcc version that supports SPE
 is gcc8.
 
+The SPE build is a separate library, `clib4spe.library`, with its own `clib4spe.resource`. SPE code passes floating
+point values in general purpose registers, where the classic library expects them in floating point registers, so the
+two can't serve each other's programs. Install `clib4spe.library` next to `clib4.library` and both kinds of programs
+run on the same machine: programs built with `SPE=true` open `clib4spe.library`.
+
 ### Shared objects
 
 Shared objects **are working** also with clib4 (there is an example under test_programs/dlopen folder).

@@ -17,7 +17,11 @@
 #include <proto/dos.h>
 
 /* Clib4 internal structures - copied from clib4.h */
+#ifdef __SPE__
+#define RESOURCE_NAME "clib4spe.resource"
+#else
 #define RESOURCE_NAME "clib4.resource"
+#endif
 
 struct bucket {
 	uint64_t hash: 48;

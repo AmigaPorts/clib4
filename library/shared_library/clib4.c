@@ -129,7 +129,7 @@ struct Clib4Library *Clib4Base = 0;
 const struct Resident RomTag;
 
 #define LIBPRI 0
-#define LIBNAME "clib4.library"
+#define LIBNAME CLIB4_LIBRARY_NAME
 
 #define ENVBUF 256
 #define ENVIRON_SIZE  4096

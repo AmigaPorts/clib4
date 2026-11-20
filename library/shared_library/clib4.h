@@ -13,7 +13,12 @@
 
 #include <stdio.h>
 
+/* The SPE build keeps its global state apart from the classic library's */
+#ifdef __SPE__
+#define RESOURCE_NAME "clib4spe.resource"
+#else
 #define RESOURCE_NAME "clib4.resource"
+#endif
 
 extern int setjmp_spe(jmp_buf);
 extern void longjmp_spe(jmp_buf, int);
