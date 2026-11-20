@@ -91,8 +91,9 @@ Keep in mind that clib4 is not compiled with altivec optimizations for all files
 
 `libcfsl_e500` (thanks to wayback machine..) has been added to clib4 providing some optimized functions. To compile
 *e500* functions pass SPE=true at makefile.  
-However to compile these functions you need a compiler that supports SPE ABI. The latest gcc version that supports SPE
-is gcc8.
+However to compile these functions you need a compiler that supports SPE ABI: gcc 8 or older, or AmigaPorts' gcc 16,
+which generates SPE code for `-mcpu=8548`. With gcc 16 as `ppc-amigaos-gcc`, the build uses it; otherwise it uses
+`ppc-amigaos-gcc-6.4.0`.
 
 The SPE build is a separate library, `clib4spe.library`, with its own `clib4spe.resource`. SPE code passes floating
 point values in general purpose registers, where the classic library expects them in floating point registers, so the

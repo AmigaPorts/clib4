@@ -58,6 +58,8 @@ endif
 # Determine the GCC version and major version number
 GCC_VERSION := $(shell $(word 1,$(CC)) -dumpversion 2>/dev/null)
 GCC_MAJOR := $(firstword $(subst ., ,$(GCC_VERSION)))
+# AmigaPorts' gcc 16 generates SPE code itself; older releases need gcc 6
+SPE_GCC16 := $(shell test "$(GCC_MAJOR)" -ge 16 2>/dev/null && echo yes)
 $(info GCC_VERSION=$(GCC_VERSION))
 $(info GCC_MAJOR=$(GCC_MAJOR))
 
@@ -86,9 +88,12 @@ WARNINGS := \
 	-Wno-frame-address -Wno-error=unused-but-set-variable -Werror
 #	-Wbad-function-cast -Wconversion -Wformat
 
+# gcc 6 doesn't know these options
 ifdef SPE
+ifneq ($(SPE_GCC16),yes)
 	WARNINGS := $(filter-out -Wno-cast-function-type, $(WARNINGS))
 	WARNINGS := $(filter-out -Wno-stringop-overflow, $(WARNINGS))
+endif
 endif
 
 PIC		   := -fPIC -DPIC
@@ -160,10 +165,16 @@ LIBRARY := clib4
 ifdef SPE
 	LIBRARY := clib4spe
 	OUTPUT_LIB = $(BUILD_DIR)/lib/soft-float
+ifeq ($(SPE_GCC16),yes)
+	SPEFLAGS := -mcpu=8548
+	# For the soft-fp helpers that SPE code calls, such as __unordsf2
+	DLIBS += -lgcc
+else
 	CC := ppc-amigaos-gcc-6.4.0
 	AS := ppc-amigaos-as-6.4.0
 	CMATH := -mfpu=dp_lite
 	SPEFLAGS := -D__SPE__ -msoft-float -mspe -mtune=8540 -mcpu=8540 -mabi=spe -mfloat-gprs=double $(CMATH)
+endif
 	CFLAGS := $(CFLAGS) $(SPEFLAGS) -fno-inline-functions -fno-partial-inlining \
 				-fno-align-functions -fno-align-jumps -fno-align-loops -fno-align-labels -fno-inline-small-functions \
 				-fno-indirect-inlining -Wno-overflow -Wno-unused-but-set-variable -Wno-uninitialized #-Wdouble-promotion
