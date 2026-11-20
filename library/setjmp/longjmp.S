@@ -39,7 +39,7 @@ FUNC_START(longjmp)
     lwzu	5,4(3)		# offset 88
     mtcrf	255,5
 
-#ifndef _SOFT_FLOAT
+#if !defined(_SOFT_FLOAT) && !defined(__SPE__)
     lfdu	14,8(3)         # offset 96
     lfdu	15,8(3)         # offset 104
     lfdu	16,8(3)         # offset 112
