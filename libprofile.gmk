@@ -46,9 +46,9 @@ $(OUT_SHARED)/%.o : CFLAGS += $(PIC) $(LARGEDATA)
 CFLAGS := $(filter-out -pg, $(CFLAGS))
 
 ifdef SPE
-$(OUT_STATIC)/%.o : $(LIB_DIR)/%.c
+$(OUT_STATIC)/%.o : $(LIB_DIR)/%.c | $(PATCHFORSPE)
 	$(VERBOSE)$(COMPILE_SPE)
-$(OUT_SHARED)/%.o : $(LIB_DIR)/%.c
+$(OUT_SHARED)/%.o : $(LIB_DIR)/%.c | $(PATCHFORSPE)
 	$(VERBOSE)$(COMPILE_SHARED_SPE)
 else
 $(OUT_STATIC)/%.o : $(LIB_DIR)/%.c
